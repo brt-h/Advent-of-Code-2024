@@ -84,10 +84,10 @@ dense_disk_map = read_dense_disk_map('rob.txt')
 print("dense_disk_map:", dense_disk_map)
 
 verbose_map = convert_format(dense_disk_map)
-print("verbose_disk_map:", ''.join(str(x) for x in verbose_map))
+print("verbose_disk_map:", ''.join(map(str, verbose_map)))
 
 compact_map = compact_format(verbose_map)
-print("compact_disk_map:", ''.join(str(x) for x in compact_map))
+print("compact_disk_map:", ''.join(map(str, compact_map)))
 
 checksum = calculate_checksum(compact_map)
 print("checksum:", checksum)
