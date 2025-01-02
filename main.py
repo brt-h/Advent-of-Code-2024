@@ -26,62 +26,60 @@ def convert_format(dense_disk_map):
 # define function to convert the verbose disk map to a compact disk map
 def compact_format(verbose_disk_map):
     compact_disk_map = verbose_disk_map.copy()
-    i = len(compact_disk_map) - 1
     
-    while i > 0:
-        if compact_disk_map[i] != '.':
-            current_id = compact_disk_map[i]
-            
-            # Find all blocks of this file ID
-            blocks = []
-            temp_i = i
-            while temp_i >= 0:
-                if compact_disk_map[temp_i] == current_id:
-                    block_end = temp_i
-                    block_start = temp_i
-                    while block_start > 0 and compact_disk_map[block_start - 1] == current_id:
-                        block_start -= 1
-                    blocks.append((block_start, block_end))
-                    temp_i = block_start - 1
-                else:
-                    temp_i -= 1
-            
-            total_size = sum(end - start + 1 for start, end in blocks)
-            
-            # Find leftmost space that can fit all blocks
-            best_space = -1
-            for j in range(blocks[-1][0]):
-                space_count = 0
-                consecutive = True
-                for k in range(j, min(j + total_size, blocks[-1][0])):
-                    if compact_disk_map[k] == '.':
-                        space_count += 1
-                    else:
-                        consecutive = False
-                        break
-                if consecutive and space_count >= total_size:
-                    best_space = j
-                    break
-            
-            if best_space != -1:
-                # Move all blocks
-                new_pos = best_space
-                for start, end in reversed(blocks):
-                    size = end - start + 1
-                    # Move block
-                    for k in range(size):
-                        compact_disk_map[new_pos + k] = current_id
-                    # Clear original
-                    for k in range(start, end + 1):
-                        compact_disk_map[k] = '.'
-                    new_pos += size
-                
-                i = blocks[-1][0] - 1
+    # Process each file ID from highest to lowest
+    for id_num in range(8, -1, -1):
+        # Find all blocks for this ID
+        blocks = []
+        i = len(compact_disk_map) - 1
+        while i >= 0:
+            if compact_disk_map[i] == id_num:
+                end = i
+                while i > 0 and compact_disk_map[i-1] == id_num:
+                    i -= 1
+                blocks.append((i, end))
+                i -= 1
             else:
                 i -= 1
-        else:
-            i -= 1
-
+                
+        if not blocks:
+            continue
+            
+        # Calculate total size needed
+        total_size = sum(end - start + 1 for start, end in blocks)
+        
+        # Find leftmost position with enough consecutive spaces
+        best_pos = -1
+        for pos in range(len(compact_disk_map)):
+            if pos > blocks[0][0]:  # Don't look beyond current position
+                break
+            count = 0
+            valid = True
+            for j in range(pos, min(pos + total_size, len(compact_disk_map))):
+                if compact_disk_map[j] == '.':
+                    count += 1
+                else:
+                    valid = False
+                    break
+            if valid and count >= total_size:
+                best_pos = pos
+                break
+                
+        # If we found a valid position, move all blocks
+        if best_pos != -1:
+            # Clear original positions first
+            for start, end in blocks:
+                for i in range(start, end + 1):
+                    compact_disk_map[i] = '.'
+            
+            # Place blocks in new position
+            curr_pos = best_pos
+            for start, end in blocks:
+                block_size = end - start + 1
+                for i in range(block_size):
+                    compact_disk_map[curr_pos + i] = id_num
+                curr_pos += block_size
+    
     return compact_disk_map
 
 # define function to calculate compact disk map checksum
