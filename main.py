@@ -1,4 +1,4 @@
-# two pointer solution (10 second runtime)
+# two pointer solution (previously 10 second runtime)
 
 # define function to read first line of text file
 def read_dense_disk_map(file_path):
