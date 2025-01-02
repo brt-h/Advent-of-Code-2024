@@ -26,27 +26,50 @@ def convert_format(dense_disk_map):
 # define function to convert the verbose disk map to a compact disk map
 def compact_format(verbose_disk_map):
     compact_disk_map = verbose_disk_map.copy()
-    file_size = 1
-    for i in range(len(compact_disk_map) - 1, -1, -1):  # loop backwards through string
+    i = len(compact_disk_map) - 1
+
+    while i > 0:
         if compact_disk_map[i] != '.':
-            if compact_disk_map[i] == compact_disk_map[i - 1]:
-                file_size += 1
-            else:
-                swap = compact_disk_map[i-file_size:i]
-                swap_location = -1
-                opening_size = 1
-                for j in range(i):
-                    if compact_disk_map[j] == '.':
-                        if compact_disk_map[j] == compact_disk_map[j + 1]:
-                            opening_size += 1
+            # Find the start of this block by going backwards
+            block_start = i
+            while block_start > 0 and compact_disk_map[block_start - 1] == compact_disk_map[i]:
+                block_start -= 1
+
+            block_size = i - block_start + 1
+
+            # Find the leftmost sequence of free spaces that can fit this block
+            best_space = -1
+            for j in range(block_start):
+                if compact_disk_map[j] == '.':
+                    # Check if we have enough consecutive spaces
+                    space_count = 0
+                    for k in range(j, min(j + block_size, block_start)):
+                        if compact_disk_map[k] == '.':
+                            space_count += 1
                         else:
-                            swap_location = j
                             break
-                if swap_location != -1:
-                    compact_disk_map[swap_location:swap_location+opening_size] = swap
-                    compact_disk_map[i-file_size:i] = '.'
-                    file_size = 1
-                    opening_size = 1
+                    if space_count >= block_size:
+                        best_space = j
+                        break
+
+            if best_space != -1:
+                # Store the block to move
+                block_to_move = compact_disk_map[block_start:i + 1]
+
+                # Fill the destination with the block
+                compact_disk_map[best_space:best_space + block_size] = block_to_move
+
+                # Fill the original location with dots
+                for j in range(block_start, i + 1):
+                    compact_disk_map[j] = '.'
+
+                # Move i to the end of the next potential block
+                i = block_start - 1
+            else:
+                i -= 1
+        else:
+            i -= 1
+
     return compact_disk_map
 
 # define function to calculate compact disk map checksum
@@ -58,17 +81,13 @@ def calculate_checksum(compact_disk_map):
     return checksum
 
 dense_disk_map = read_dense_disk_map('rob.txt')
+print("dense_disk_map:", dense_disk_map)
 
-print("dense_disk_map: ", dense_disk_map)
+verbose_map = convert_format(dense_disk_map)
+print("verbose_disk_map:", ''.join(str(x) for x in verbose_map))
 
-verbose_disk_map = convert_format(dense_disk_map)
+compact_map = compact_format(verbose_map)
+print("compact_disk_map:", ''.join(str(x) for x in compact_map))
 
-print("verbose_disk_map: ", verbose_disk_map)
-
-compact_disk_map = compact_format(verbose_disk_map)
-
-print("compact_disk_map: ", compact_disk_map)
-
-checksum = calculate_checksum(compact_disk_map)
-
-print("checksum: ", checksum)
+checksum = calculate_checksum(compact_map)
+print("checksum:", checksum)
