@@ -27,44 +27,56 @@ def convert_format(dense_disk_map):
 def compact_format(verbose_disk_map):
     compact_disk_map = verbose_disk_map.copy()
     i = len(compact_disk_map) - 1
-
+    
     while i > 0:
         if compact_disk_map[i] != '.':
-            # Find the start of this block by going backwards
-            block_start = i
-            while block_start > 0 and compact_disk_map[block_start - 1] == compact_disk_map[i]:
-                block_start -= 1
-
-            block_size = i - block_start + 1
-
-            # Find the leftmost sequence of free spaces that can fit this block
+            current_id = compact_disk_map[i]
+            
+            # Find all blocks of this file ID
+            blocks = []
+            temp_i = i
+            while temp_i >= 0:
+                if compact_disk_map[temp_i] == current_id:
+                    block_end = temp_i
+                    block_start = temp_i
+                    while block_start > 0 and compact_disk_map[block_start - 1] == current_id:
+                        block_start -= 1
+                    blocks.append((block_start, block_end))
+                    temp_i = block_start - 1
+                else:
+                    temp_i -= 1
+            
+            total_size = sum(end - start + 1 for start, end in blocks)
+            
+            # Find leftmost space that can fit all blocks
             best_space = -1
-            for j in range(block_start):
-                if compact_disk_map[j] == '.':
-                    # Check if we have enough consecutive spaces
-                    space_count = 0
-                    for k in range(j, min(j + block_size, block_start)):
-                        if compact_disk_map[k] == '.':
-                            space_count += 1
-                        else:
-                            break
-                    if space_count >= block_size:
-                        best_space = j
+            for j in range(blocks[-1][0]):
+                space_count = 0
+                consecutive = True
+                for k in range(j, min(j + total_size, blocks[-1][0])):
+                    if compact_disk_map[k] == '.':
+                        space_count += 1
+                    else:
+                        consecutive = False
                         break
-
+                if consecutive and space_count >= total_size:
+                    best_space = j
+                    break
+            
             if best_space != -1:
-                # Store the block to move
-                block_to_move = compact_disk_map[block_start:i + 1]
-
-                # Fill the destination with the block
-                compact_disk_map[best_space:best_space + block_size] = block_to_move
-
-                # Fill the original location with dots
-                for j in range(block_start, i + 1):
-                    compact_disk_map[j] = '.'
-
-                # Move i to the end of the next potential block
-                i = block_start - 1
+                # Move all blocks
+                new_pos = best_space
+                for start, end in reversed(blocks):
+                    size = end - start + 1
+                    # Move block
+                    for k in range(size):
+                        compact_disk_map[new_pos + k] = current_id
+                    # Clear original
+                    for k in range(start, end + 1):
+                        compact_disk_map[k] = '.'
+                    new_pos += size
+                
+                i = blocks[-1][0] - 1
             else:
                 i -= 1
         else:
