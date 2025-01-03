@@ -33,11 +33,13 @@ def compact_format(verbose_disk_map):
         blocks = []
         i = len(compact_disk_map) - 1
         while i >= 0:
-            if compact_disk_map[i] == id_num:
+            if isinstance(compact_disk_map[i], (int, float)) and int(compact_disk_map[i]) == id_num:
                 end = i
-                while i > 0 and compact_disk_map[i-1] == id_num:
+                start = i
+                while i > 0 and isinstance(compact_disk_map[i-1], (int, float)) and int(compact_disk_map[i-1]) == id_num:
                     i -= 1
-                blocks.append((i, end))
+                    start = i
+                blocks.append((start, end))
                 i -= 1
             else:
                 i -= 1
