@@ -1,7 +1,7 @@
 # A hiking trail is any path that starts at height 0, ends at height 9, and always increases by a height of exactly 1 at each step.
 # Hiking trails never include diagonal steps - only up, down, left, or right (from the perspective of the map).
 # A trailhead is any position that starts one or more hiking trails - here, these positions will always have height 0.
-# A trailhead's score is the number of 9-height positions reachable from that trailhead via a hiking trail.
+# A trailhead's rating is the number of distinct hiking trails which begin at that trailhead
 
 # test case:
 # 89010123
@@ -15,8 +15,8 @@
 
 # test case information:
 # 9 trailheads
-# trailhead scores 5, 6, 5, 3, 1, 3, 5, 3, 5
-# sum of all scores is 36
+# trailhead ratings 20, 24, 10, 4, 1, 4, 5, 8, 5
+# sum of all ratings is 81
 
 def read_matrix(file_path):
   """
@@ -63,6 +63,53 @@ def get_availible_steps(map, current_x, current_y, current_elevation):
       availible_steps.append([next_x, next_y])
   return availible_steps
 
+def find_distinct_paths_to_a_peak(map, trailhead_x, trailhead_y):
+  # at elevation 0 number of distinct paths starts at 1, the trailhead
+  paths = 1
+  print("Starting at trailhead, paths: ", paths)
+
+  # current elevation starts at 0'
+  current_elevation = 0
+
+  # current locations to evaluate starts with just the trailhead
+  locations_to_evaluate = [[trailhead_x, trailhead_y]]
+
+  while current_elevation < 9:
+
+    # find all availible steps
+    new_locations_to_evaluate = []
+
+    # find all availible steps for current elevation
+    for location in locations_to_evaluate:
+
+      # find all availible steps for current location being evaluated
+      availible_steps = get_availible_steps(map, location[0], location[1], current_elevation)
+
+      # adjust number of paths based on number of availible steps
+      num_availible_steps = len(availible_steps)
+      if num_availible_steps == 0:
+        # if current path is a dead end subtract one from paths
+        paths -= 1
+        print(f"----0 paths found for location: {location} number of paths reduced by 1 to {paths}")
+      else:
+        # if current path leads to more than 1 path, add the extras to paths
+        paths += (num_availible_steps - 1)
+        print(f"----{num_availible_steps} paths found for location: {location} number of paths increased by {num_availible_steps - 1} to {paths}")
+
+      # add all availible steps to new locations to evaluate
+      for step in availible_steps:
+        new_locations_to_evaluate.append(step)
+
+    # update locations to evaluate
+    locations_to_evaluate = new_locations_to_evaluate
+
+    # update current elevation
+    current_elevation += 1
+    print("--Updating current elevation to ", current_elevation)
+
+  # once current_elevation = 9 return paths
+  return paths
+
 def find_accessible_peaks(map, trailhead_x, trailhead_y):
   peaks = []
 
@@ -100,8 +147,9 @@ def find_accessible_peaks(map, trailhead_x, trailhead_y):
   return peaks
 
 def score_trailhead(map, trailhead_x, trailhead_y):
-  peaks = find_accessible_peaks(map, trailhead_x, trailhead_y)
-  return len(peaks)
+  paths = find_distinct_paths_to_a_peak(map, trailhead_x, trailhead_y)
+  print(f"trailhead at {trailhead_x}, {trailhead_y} has {paths} paths")
+  return paths
 
 def sum_trailhead_scores(map):
   trailheads = find_trailheads(map)
