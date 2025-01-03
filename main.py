@@ -28,7 +28,8 @@ def compact_format(verbose_disk_map):
     compact_disk_map = verbose_disk_map.copy()
     
     # Process each file ID from highest to lowest
-    for id_num in range(8, -1, -1):
+    max_id = max(x for x in verbose_disk_map if isinstance(x, (int, float)))
+    for id_num in range(max_id, -1, -1):
         # Find all blocks for this ID
         blocks = []
         i = len(compact_disk_map) - 1
