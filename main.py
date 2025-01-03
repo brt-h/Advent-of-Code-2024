@@ -50,7 +50,7 @@ def compact_format(verbose_disk_map):
         
         # Find leftmost position with enough consecutive spaces
         best_pos = -1
-        for pos in range(len(compact_disk_map)):
+        for pos in range(len(compact_disk_map)):    
             if pos > blocks[0][0]:  # Don't look beyond current position
                 break
             count = 0
@@ -79,6 +79,8 @@ def compact_format(verbose_disk_map):
                 for i in range(block_size):
                     compact_disk_map[curr_pos + i] = id_num
                 curr_pos += block_size
+            # TODO delete this print
+            print("compact_disk_map:", ''.join(map(str, compact_disk_map)))
     
     return compact_disk_map
 
@@ -94,7 +96,7 @@ dense_disk_map = read_dense_disk_map('rob.txt')
 print("dense_disk_map:", dense_disk_map)
 
 verbose_map = convert_format(dense_disk_map)
-print("verbose_disk_map:", ''.join(map(str, verbose_map)))
+print("verbose_disk_map:", verbose_map)
 
 compact_map = compact_format(verbose_map)
 print("compact_disk_map:", ''.join(map(str, compact_map)))
