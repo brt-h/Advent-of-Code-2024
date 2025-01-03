@@ -1,6 +1,6 @@
 # two pointer solution (previously 10 second runtime)
 
-# define function to read first line of text file
+# define function to read all lines of a text file
 def read_dense_disk_map(file_path):
     with open(file_path, 'r') as file:
         content = file.readline()
@@ -82,8 +82,6 @@ def compact_format(verbose_disk_map):
                 for i in range(block_size):
                     compact_disk_map[curr_pos + i] = id_num
                 curr_pos += block_size
-            # TODO delete this print
-            print("compact_disk_map:", ''.join(map(str, compact_disk_map)))
     
     return compact_disk_map
 
