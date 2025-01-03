@@ -1,7 +1,7 @@
 # A hiking trail is any path that starts at height 0, ends at height 9, and always increases by a height of exactly 1 at each step.
 # Hiking trails never include diagonal steps - only up, down, left, or right (from the perspective of the map).
 # A trailhead is any position that starts one or more hiking trails - here, these positions will always have height 0.
-# A trailhead's rating is the number of distinct hiking trails which begin at that trailhead
+# A trailhead's rating is the number of distinct hiking trails which begin at that trailhead.
 
 # test case:
 # 89010123
