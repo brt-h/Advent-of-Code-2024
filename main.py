@@ -53,20 +53,17 @@ def compact_format(verbose_disk_map):
         
         # Find leftmost position with enough consecutive spaces
         best_pos = -1
-        for pos in range(len(compact_disk_map)):    
-            if pos > blocks[0][0]:  # Don't look beyond current position
-                break
-            count = 0
-            valid = True
-            for j in range(pos, min(pos + total_size, len(compact_disk_map))):
-                if compact_disk_map[j] == '.':
-                    count += 1
-                else:
-                    valid = False
+        pos = 0
+        count = 0
+        while pos < blocks[0][0]:
+            if compact_disk_map[pos] == '.':
+                count += 1
+                if count >= total_size:
+                    best_pos = pos - count + 1
                     break
-            if valid and count >= total_size:
-                best_pos = pos
-                break
+            else:
+                count = 0
+            pos += 1
                 
         # If we found a valid position, move all blocks
         if best_pos != -1:
